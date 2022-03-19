@@ -5,4 +5,4 @@ http://spatialreasoning.com/wp/20170307_1244_r-reading-filtering-weather-data-fr
 
 further notes will be added
 
-third Commit from Rstudio 
+Commit from Rstudio d
