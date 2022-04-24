@@ -457,3 +457,45 @@ aaaaa3 <- hier_average_clustering(a,180,10,100)
 
 aaaaa4 <- hier_average_clustering(a[1:30,1:30],180,10,100)
 
+
+
+
+
+################################################################################
+
+#library(stringi)
+
+# These are all functions to check that there are no repetations in the clustering 
+# and they extract the ID of the stations 
+char_num <- function(x){
+  return(as.numeric(unlist(x)))
+}
+
+char_num_l <- function(x,sep=","){
+  stat <- strsplit(x,sep)
+  return(lapply(stat, char_num))
+}
+
+check_no_rep <- function(x,av){
+  a <- sort(unlist(x)) # unroll 
+  numb_av <- dim(av)[1]
+  if(numb_av != length(a) || any(sort(unique(a)) != (1:numb_av)) ){
+    # print("something is wrong!!")
+    return(0)
+  }else{
+    # print("ok,no rep and same length")
+    return(1)
+  }
+}
+
+retrieve_id <- function(s,y){ # clusters, stations' table
+  x <- char_num_l(s)
+  if(check_no_rep(x,y) != 0){
+    stat2 <- lapply(x,function(x,y){y[x,]$ID},y)  # DON'T CHANGE THE field ID
+    return(stat2)
+  }else{
+    return(0)
+  } 
+}
+
+aaaaa3_clus_id <- retrieve_id(aaaaa3[[1]],av)
