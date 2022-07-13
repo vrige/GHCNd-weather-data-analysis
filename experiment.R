@@ -330,6 +330,46 @@ fwrite(available_stations2,  paste0(getwd(),"/", "available_stations_5.csv"))
 
 
 
+################################################################################
+################################################################################
+# some corrections and graphics of the considered area
+
+setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/experiment")
+
+library(data.table)
+library(dplyr) 
+library(tidyr)
+
+dirname <- paste0(getwd(),"/stn80.csv")
+stn80 <- fread(dirname)
+stations <- fread(paste0(getwd(),"/", "available_stations_3.csv"))
+
+stations_ext <- inner_join(stations,stn80,by="ID")[,c(1,5,6,7,8)]
+
+stations <- stations_ext[((stations_ext$ST != "AK") & 
+                            (stations_ext$ST != "HI") & 
+                            (stations_ext$ST != "PI") & 
+                            (stations_ext$ST != "UM")), ]
+
+#fwrite(stations,  paste0(getwd(),"/", "available_stations_3.csv"))
+
+library(ggplot2)
+library(maps)
+library(mapproj)
+
+head(map_data('state'),15)
+states <- c('OH','IN','MI','IL','WI','KY','WV')
+est_states = stations[ (stations$ST %in% states) & (stations$ID != 'USW00003859'),]
+
+usa_tbl <- map_data("state", region = c('ohio','indiana','michigan:south','illinois','wisconsin')) %>% as_tibble()
+
+usa_tbl %>% 
+  ggplot() + 
+  geom_map(
+    map = usa_tbl, aes(x=long, y=lat, map_id = region),color = "gray80", fill = "gray30", size = 0.4
+  ) +
+  coord_map("ortho",orientation = c(39,-98,0))+
+  geom_point(data = est_states, aes(x=LON.y,y=LAT.y), color = "red")
 
 
 
@@ -340,13 +380,4 @@ fwrite(available_stations2,  paste0(getwd(),"/", "available_stations_5.csv"))
 
 
 
-
-
-
-
-
-
-
-#a <- fread(paste(getwd(),"/us_borders.csv",sep=""),blank.lines.skip = TRUE)
-#plot(a)
 
