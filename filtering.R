@@ -368,13 +368,16 @@ usa_tbl %>%
   geom_map(
     map = usa_tbl, aes(x=long, y=lat, map_id = region),color = "gray80", fill = "gray30", size = 0.4
   ) +
-  coord_map("ortho",orientation = c(39,-98,0))+
+  #coord_map("ortho",orientation = c(39,-98,0))+
   geom_point(data = est_states, aes(x=LON.y,y=LAT.y), color = "red")
 
 
-
-
-
+MainStates <- map_data("state")
+#plot all states with ggplot2, using black borders and light blue fill
+ggplot() + 
+  geom_polygon( data=MainStates, aes(x=long, y=lat, group=group),
+                color="black", fill="lightblue" )+
+  geom_point(data = stations, aes(x=LON.y,y=LAT.y), color = "red")
 
 
 
