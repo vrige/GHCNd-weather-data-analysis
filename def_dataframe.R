@@ -1,3 +1,5 @@
+# useful file to obtain the stations for Texas given the list from Eno
+
 setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/experiment/")
 
 library(data.table)
