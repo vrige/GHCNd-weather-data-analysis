@@ -88,7 +88,7 @@ fillMissingValues <- function(station_ID){  # input must be a string
   
   check <- unlist(lapply(means[,c(-1,-2)], function(x) all(is.finite(x))))
   if(!all(check)){
-    print("there still are NAs")
+     print("there still are NAs among the means. So, watch out")
   }
   
   pos_na <- sapply(exa[,c(-1,-2,-3,-4)], function(x) which(!is.finite(x) == "TRUE"))
@@ -111,7 +111,7 @@ fillMissingValues <- function(station_ID){  # input must be a string
   summ = 0
   for (i in 1:31){ summ = summ + length(unlist(pos_na_2[i]))}
   if(summ != 0){
-    print("there may be some problems")
+    print("there may be some problems. Number of missing values: " + summ)
   }
   fwrite(exa,  paste0(getwd(), "/1_",station_ID,".csv"))
   exa
