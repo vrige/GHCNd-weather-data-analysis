@@ -73,13 +73,13 @@ us4 <- us1[(us1$ELEM == "PRCP") & (us1$FIRST <= 1965) & (us1$LAST >= 2015), c(1,
 colnames(us4) <- c("ID", "PRCPf", "PRCPl")
 us_years <- merge(us_years, us4, all=FALSE)
 
-us5 <- us1[(us1$ELEM == "SNOW") & (us1$FIRST <= 1965) & (us1$LAST >= 2015), c(1,5,6)]
-colnames(us5) <- c("ID", "SNOWf", "SNOWl")
-us_years <- merge(us_years, us5, all=FALSE)
+#us5 <- us1[(us1$ELEM == "SNOW") & (us1$FIRST <= 1965) & (us1$LAST >= 2015), c(1,5,6)]
+#colnames(us5) <- c("ID", "SNOWf", "SNOWl")
+#us_years <- merge(us_years, us5, all=FALSE)
 
-us6 <- us1[(us1$ELEM == "SNWD") & (us1$FIRST <= 1965) & (us1$LAST >= 2015), c(1,5,6)]
-colnames(us6) <- c("ID", "SNWDf", "SNWDl")
-us_years <- merge(us_years, us6, all=FALSE)
+#us6 <- us1[(us1$ELEM == "SNWD") & (us1$FIRST <= 1965) & (us1$LAST >= 2015), c(1,5,6)]
+#colnames(us6) <- c("ID", "SNWDf", "SNWDl")
+#us_years <- merge(us_years, us6, all=FALSE)
 
 us_stns <- stns[grep("US+",stns$ID),]
 unique(us_stns$ST)
@@ -130,8 +130,8 @@ for (i in 1:numFiles) {
 us80$natmax <- 0
 us80$natmin <- 0
 us80$naprcp <- 0
-us80$nasnow <- 0
-us80$nasnwd <- 0
+#us80$nasnow <- 0
+#us80$nasnwd <- 0
 numFiles <- length(us80$ID)
 
 for (i in 1:numFiles) {
@@ -140,13 +140,13 @@ for (i in 1:numFiles) {
   us80$natmax[i] <- sum(sapply(df[df$element == "TMAX",c(5:35)], function (x) length(x[is.na(x)])))
   us80$natmin[i] <- sum(sapply(df[df$element == "TMIN",c(5:35)], function (x) length(x[is.na(x)])))
   us80$naprcp[i] <- sum(sapply(df[df$element == "PRCP",c(5:35)], function (x) length(x[is.na(x)])))
-  us80$nasnow[i] <- sum(sapply(df[df$element == "SNOW",c(5:35)], function (x) length(x[is.na(x)])))
-  us80$nasnwd[i] <- sum(sapply(df[df$element == "SNWD",c(5:35)], function (x) length(x[is.na(x)])))
+  #us80$nasnow[i] <- sum(sapply(df[df$element == "SNOW",c(5:35)], function (x) length(x[is.na(x)])))
+  #us80$nasnwd[i] <- sum(sapply(df[df$element == "SNWD",c(5:35)], function (x) length(x[is.na(x)])))
 }
 
 # 2% of data = 50 x 12 x 31 x 0.05 = 372
 thr = 50 * 12 * 31 * 0.02
-stn80 <- us80[us80$natmax <= thr & us80$natmin <= thr & us80$naprcp <= thr & us80$nasnow <= thr & us80$nasnwd <= thr, ]
+stn80 <- us80[us80$natmax <= thr & us80$natmin <= thr & us80$naprcp <= thr ,] #& us80$nasnow <= thr & us80$nasnwd <= thr, ]
 fwrite(stn80,  paste0(getwd(),"/experiment/", "stn80.csv"))
 
 dim(stn80)
@@ -192,8 +192,8 @@ numFiles <- dim(stn80)[1]
 df_tmax <- data.frame()
 df_tmin <- data.frame()
 df_prcp <- data.frame()
-df_snow <- data.frame()
-df_snwd <- data.frame()
+#df_snow <- data.frame()
+#df_snwd <- data.frame()
 
 for (i in 1:numFiles) {
 
@@ -204,21 +204,21 @@ for (i in 1:numFiles) {
   tmax <- temp %>% filter(element == "TMAX")
   tmin <- temp %>% filter(element == "TMIN")
   prcp <- temp %>% filter(element == "PRCP")
-  snow <- temp %>% filter(element == "SNOW")
-  snwd <- temp %>% filter(element == "SNWD")
+  #snow <- temp %>% filter(element == "SNOW")
+  #snwd <- temp %>% filter(element == "SNWD")
   df_tmax <- rbind(df_tmax,tmax)
   df_tmin <- rbind(df_tmin,tmin)
   df_prcp <- rbind(df_prcp,prcp)
-  df_snow <- rbind(df_snow,snow)
-  df_snwd <- rbind(df_snwd,snwd)
+  #df_snow <- rbind(df_snow,snow)
+  #df_snwd <- rbind(df_snwd,snwd)
   
 }
 
 fwrite(df_tmax,  paste0(getwd(), "/stn80_tmax_na.csv"))
 fwrite(df_tmin,  paste0(getwd(), "/stn80_tmin_na.csv"))
 fwrite(df_prcp,  paste0(getwd(), "/stn80_prcp_na.csv"))
-fwrite(df_snow,  paste0(getwd(), "/stn80_snow_na.csv"))
-fwrite(df_snwd,  paste0(getwd(), "/stn80_snwd_na.csv"))
+#fwrite(df_snow,  paste0(getwd(), "/stn80_snow_na.csv"))
+#fwrite(df_snwd,  paste0(getwd(), "/stn80_snwd_na.csv"))
 
 
 ################################################################################
@@ -266,7 +266,7 @@ for (year in 1:50) {
 # in the data. (e.g. if 1 year is missing, we add 372 missing values)
 # Modifying the output of the function is possible to extract the exact location of
 # missing values by years and months
-missing_values <- function(infile) {
+compute_missing_values <- function(infile) {
   df <- fread(infile)
   a <- df %>% group_by(ID,year,month) %>% 
     summarise(across(c(2:32), ~ sum(is.na(.x))))
@@ -291,42 +291,42 @@ missing_values <- function(infile) {
 
 
 infile <- paste0(getwd(),"/stn80_tmax_na.csv")
-tmax <- missing_values(infile)
+tmax <- compute_missing_values(infile)
 tmax_1y <- tmax %>% filter(est_missing_years < 1)
 colnames(tmax_1y) <- c("ID", "tmax_na_id", "est_missing_years")
 
 
 infile <- paste0(getwd(),"/stn80_tmin_na.csv")
-tmin <- missing_values(infile)
+tmin <- compute_missing_values(infile)
 tmin_1y <- tmin %>% filter(est_missing_years < 1)
 colnames(tmin_1y) <- c("ID", "tmin_na_id", "est_missing_years")
 
 
 infile <- paste0(getwd(),"/stn80_prcp_na.csv")
-prcp <- missing_values(infile)
+prcp <- compute_missing_values(infile)
 prcp_1y <- prcp %>% filter(est_missing_years < 1)
 colnames(prcp_1y) <- c("ID", "prcp_na_id", "est_missing_years")
 
 
-infile <- paste0(getwd(),"/stn80_snow_na.csv")
-snow <- missing_values(infile)
-snow_1y <- snow %>% filter(est_missing_years < 1)
-colnames(snow_1y) <- c("ID", "snow_na_id", "est_missing_years")
+#infile <- paste0(getwd(),"/stn80_snow_na.csv")
+#snow <- compute_missing_values(infile)
+#snow_1y <- snow %>% filter(est_missing_years < 1)
+#colnames(snow_1y) <- c("ID", "snow_na_id", "est_missing_years")
 
 
-infile <- paste0(getwd(),"/stn80_snwd_na.csv")
-snwd <- missing_values(infile)
-snwd_1y <- snwd %>% filter(est_missing_years < 1)
-colnames(snwd_1y) <- c("ID", "snwd_na_id", "est_missing_years")
+#infile <- paste0(getwd(),"/stn80_snwd_na.csv")
+#snwd <- compute_missing_values(infile)
+#snwd_1y <- snwd %>% filter(est_missing_years < 1)
+#colnames(snwd_1y) <- c("ID", "snwd_na_id", "est_missing_years")
 
 
 available_stations <- merge(tmax_1y[,1:2], tmin_1y[,1:2], all=FALSE)
 available_stations <- merge(available_stations, prcp_1y[,1:2], all=FALSE)
-available_stations2 <- merge(available_stations, snow_1y[,1:2], all=FALSE)
-available_stations2 <- merge(available_stations2, snwd_1y[,1:2], all=FALSE)
+#available_stations2 <- merge(available_stations, snow_1y[,1:2], all=FALSE)
+#available_stations2 <- merge(available_stations2, snwd_1y[,1:2], all=FALSE)
 
 fwrite(available_stations,  paste0(getwd(),"/", "available_stations_3.csv"))
-fwrite(available_stations2,  paste0(getwd(),"/", "available_stations_5.csv"))
+#fwrite(available_stations2,  paste0(getwd(),"/", "available_stations_5.csv"))
 
 
 
