@@ -63,8 +63,17 @@ pos_na_2 <- sapply(exa[,c(-1,-2,-3,-4)], function(x) which(!is.finite(x) == "TRU
 # in the table.
 # It has problems if all the means in a month and all the previous are NAs  
 fillMissingValues <- function(station_ID){  # input must be a string
+  
   exa <- fread(paste0(getwd(),"/", station_ID,".csv"))
   exa <- exa %>% filter(element %in% c("TMAX","TMIN","PRCP"))
+  
+  element <- c("TMAX","TMIN","PRCP")
+  df <- data.frame( year = rep(c(1965:2015), each = 12), month = rep(c(1:12),51))
+  df <- crossing(df, element)
+  df$ID <- station_ID
+  df <- df[,c(4,1,2,3)]
+  
+  exa <- merge(df, exa, all.x=TRUE)
   
   means <- exa %>% 
     select(-c(1,2)) %>% 
@@ -88,7 +97,7 @@ fillMissingValues <- function(station_ID){  # input must be a string
   
   check <- unlist(lapply(means[,c(-1,-2)], function(x) all(is.finite(x))))
   if(!all(check)){
-     print("there still are NAs among the means. So, watch out")
+    print("there still are NAs among the means. So, watch out")
   }
   
   pos_na <- sapply(exa[,c(-1,-2,-3,-4)], function(x) which(!is.finite(x) == "TRUE"))
@@ -101,7 +110,8 @@ fillMissingValues <- function(station_ID){  # input must be a string
     b <- unlist(pos_na[i])
     if(length(b) > 0){
       for(j in 1:length(b)){
-        exa[b[j]][[(i+4)]] <- as.numeric(a[j])
+        #exa[b[j]][[(i+4)]] <- as.numeric(a[j])
+        exa[b[j],i+4] <- as.numeric(a[[1]][j])
       }
     }
   }
@@ -110,12 +120,13 @@ fillMissingValues <- function(station_ID){  # input must be a string
   
   summ = 0
   for (i in 1:31){ summ = summ + length(unlist(pos_na_2[i]))}
-  if(summ != 0){
-    print("there may be some problems. Number of missing values: " + summ)
+  if(summ > 0){
+    #print("there may be some problems. Number of missing values: " + as.numeric(summ))
   }
   fwrite(exa,  paste0(getwd(), "/1_",station_ID,".csv"))
-  exa
+  summ
 }
+
 
 #a <- fillMissingValues("USC00148235")
 #mam2 <- fread(paste0(getwd(),"/1_", "USC00148235",".csv"))
