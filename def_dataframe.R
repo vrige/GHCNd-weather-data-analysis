@@ -1,33 +1,46 @@
+setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/")
+
 # useful file to obtain the stations for Texas given the list from Eno
-
-setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/experiment/")
-
 library(data.table)
 library(dplyr) 
 library(tidyr)
 
-stnscsv <- paste0(getwd(),"/../","stations.csv")
+stnscsv <- paste0(getwd(),"stations.csv")
 
 typedcols <- c( "A11", "F9", "F10", "F7", "X1","A2",
                 "X1","A30", "X1", "A3", "X1", "A3", "X1", "A5" )
 stns <- read.fortran(paste0(getwd(),"/","ghcnd-stations.txt"),
                      typedcols, 
                      comment.char="")
+hdrs <- c("ID", "LAT", "LON", "ELEV", "ST", "NAME","GSN", "HCN", "WMOID")
+names(stns) <- hdrs
+setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/experiment/")
 
 # Import the stations to analyze from Eno's results
 final_tmax <- fread("final_tmax.csv")
 final_tmin <- fread("final_tmin.csv")
-final_prec <- fread("final_prcp.csv")
+final_prcp <- fread("final_prcp.csv")
 
 # join to add lat,long, alt and name for each station
 final_tmax <- left_join(final_tmax, stns, by=c('ID'))[,c(2,5,6,7,9)]
 final_tmin <- left_join(final_tmin, stns, by=c('ID'))[,c(2,5,6,7,9)]
-final_prec <- left_join(final_prec, stns, by=c('ID'))[,c(2,5,6,7,9)]
+final_prcp <- left_join(final_prcp, stns, by=c('ID'))[,c(2,5,6,7,9)]
+
+setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/experiment/texas/")
+# recap tables
+fwrite(final_tmax,"final_tmax_f.csv")
+fwrite(final_tmin,"final_tmin_f.csv")
+fwrite(final_prcp,"final_prcp_f.csv")
 
 #################################################################################
 # i need to extract the file with these stations for texas 
 
-list_stations <- unique(c(final_tmax$ID,final_tmin$ID,final_prec$ID))
+# Import the stations to analyze from Eno's results
+final_tmax <- fread("final_tmax_f.csv")
+final_tmin <- fread("final_tmin_f.csv")
+final_prcp <- fread("final_prcp_f.csv")
+
+list_stations <- unique(c(final_tmax$ID,final_tmin$ID,final_prcp$ID))
 
 setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project")
 
@@ -72,11 +85,45 @@ for (i in list_stations){
 #################################################################################
 
 
+setwd("C:/Users/39340/Desktop/poliMI/Applied statistics/project/experiment/texas/")
+
+# function to create the table as we would like to have
+getTable <- function(est_states,string){ #string must be one among TMAX, TMIN and PRCP
+  
+  numFiles <- dim(est_states)[1]
+  for (i in 1:numFiles) {
+
+    df <- data.frame( year = rep(c(1965:2015), each = 12), month = rep(c(1:12),51))
+    df$ID <- est_states$ID[i]
+    
+    fname <- paste0(getwd(),"/1_",est_states$ID[i],".csv")
+    stnf <- fread(fname)  ## read the file for the current station
+   
+    ## select only the TMAX elements from the incoming file, and merge with the data frame df.
+    ## Use gather (from tidyr) to convert the daily data from row to columns.
+    outfr <- stnf[stnf$element == string, -c(4)]
+    outfr <- merge(df, outfr, all.x=TRUE)
+    outfr1 <- outfr %>% gather(day, TMAX, Val1:Val31)  ## create one line for each day
+    outfr1$day <- as.integer(substring(outfr1$day, 4, last = 1000000L)) 
+    ## label the day by the integer after "Val". last = 1000000L means go to the end of the string.
+    outfr1 <- outfr1 %>% arrange(year,month,day)
+    
+    ## save the file
+    outfile <- paste0( getwd(),"/",string,"/2_",est_states$ID[i],".csv")
+    fwrite(outfr1, outfile)
+  }
+}
+
+getTable(final_tmax,"TMAX")
+getTable(final_tmin,"TMIN")
+getTable(final_prcp,"PRCP")
 
 
-########
-#######  still woriking on the following lines
-########
+################################################################################
+################################################################################
+
+
+
 
 
 
@@ -85,12 +132,11 @@ for (i in list_stations){
 
 # Create a daily dataframe of 1 year of a feature (TMAX,TMIN,PRCP) as mean over 1965-2015
 
-df_final1 = df %>% select(month,day,daycount)
 
 numFiles <- dim(stns)[1]
 
 for (i in 1:numFiles) { # For each station
-  fname <- paste0(getwd(),"1_",stns$ID[i],"_50.csv")
+  fname <- paste0(getwd(),"/1_",stns$ID[i],".csv")
   tempf <- fread(fname, stringsAsFactors=FALSE)
   # tempf = tempf[tempf$year>=1965 & tempf$year<=2015,]     # Select range of interest (default 1965-2015) 
   df = tempf %>% group_by(month,day) %>% summarise(feat = mean(PRCP, na.rm=TRUE))
@@ -102,57 +148,9 @@ for (i in 1:numFiles) { # For each station
   
 }
 
+df_final1 = df %>% select(month,day,daycount)
+
 df_final1 = df_final1 %>% arrange(daycount) # Order datatset with respect to daycount (cronological order)
 
 outfile1 <- paste0(getwd(),"PRCP_tot_mean.csv")
 fwrite(df_final1, outfile1)
-
-##################################################################################################################
-##################################################################################################################
-
-# Create monthly dataset of a feature as a mean over 1965-2015
-numFiles <- dim(stns)[1]
-
-df_final2 = data.frame(matrix(nrow = 12,ncol= 0))
-
-for (i in 1:numFiles) { # For each station
-  fname <- paste0("C:/Users/enogj/Desktop/proj stat/dataset/Ordered dataset/",stns$ID[i],"_50.csv")
-  tempf <- fread(fname, stringsAsFactors=FALSE)
-  # tempf = tempf[tempf$year>=1965 & tempf$year<=2015,]     # Select range of interest (default 1965-2015)
-  df = tempf %>% group_by(month) %>% summarise(feat = mean(PRCP, na.rm=TRUE))
-  df = df %>% select(feat)
-  colnames(df) = c(first(tempf$ID))
-  df_final2 = cbind(df_final2,df)
-  
-}
-
-outfile1 <- paste0("C:/Users/enogj/Desktop/proj stat/dataset/PRCP/","PRCP_month_mean.csv")
-fwrite(df_final2, outfile1)
-
-##################################################################################################################
-##################################################################################################################
-
-# Creates a annual dataset for kriging as mean over 1965-2015
-
-numFiles <- dim(stns)[1]
-
-df_final3 = data.frame()
-
-
-for (i in 1:numFiles) { # For each station
-  fname <- paste0("C:/Users/enogj/Desktop/proj stat/dataset/Ordered dataset/",stns$ID[i],"_50.csv")
-  tempf <- fread(fname, stringsAsFactors=FALSE)
-  # tempf = tempf[tempf$year>=1965 & tempf$year<=2015,]     # Select range of interest (default 1965-2015)
-  df <- tempf %>% group_by(ID) %>% summarise(ID = first(ID),value = mean(TMAX, na.rm=TRUE))
-  df$LAT=stns$LAT[i]
-  df$LON=stns$LON[i]
-  df$ELEV=stns$ELEV[i]
-  df_final3 = rbind(df_final3,df)
-  
-}
-
-outfile1 <- paste0("C:/Users/enogj/Desktop/proj stat/dataset/TMAX/","TMAX_tot_mean_krg.csv")
-fwrite(df_final3, outfile1)
-
-##################################################################################################################
-##################################################################################################################
