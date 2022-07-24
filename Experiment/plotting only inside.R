@@ -38,3 +38,21 @@ usa_tbl %>%
 
 ########################################################################################################
 
+# Extract elevation from data
+library(elevatr)
+
+prj_dd <- "+proj=lcc +lat_1=27.41666666666667 +lat_2=34.91666666666666 +lat_0=31.16666666666667 +lon_0=-100 +x_0=1000000 +y_0=1000000 +ellps=GRS80 +datum=NAD83 +units=km +no_defs "
+
+df_elev_epqs <- get_elev_point(grid, prj = prj_dd, src = "epqs")
+
+elev = as.data.frame(df_elev_epqs)
+
+grid$elev = elev$elevation
+
+cord.UTM = SpatialPoints(cbind(grid$x, grid$y), proj4string = CRS("+proj=lcc +lat_1=27.41666666666667 +lat_2=34.91666666666666 +lat_0=31.16666666666667 +lon_0=-100 +x_0=1000000 +y_0=1000000 +ellps=GRS80 +datum=NAD83 +units=km +no_defs "))
+
+cord.dec <- spTransform(cord.UTM,CRS("+proj=longlat +datum=WGS84"))
+cord.dec = as.data.frame(cord.dec)
+grid$LAT = cord.dec$coords.x2
+grid$LON = cord.dec$coords.x1
+
