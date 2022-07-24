@@ -2,3 +2,5 @@ Our team decided to study the GHCND (Global Historical Climatology Network daily
 Precipitation and temperature are variables that are considerably affected by the environment, but how does the latter affect these variables? And which effects in particular are useful in explaining the variability in the data? 
 To answer these questions, we used some geostatistical methods, in particular the kriging technique, which is an interpolation technique that can be used to interpret spatial data and it can be used to make predictions on selected points.
 Our analysis among three different periods of time (1967-1973, 1987-1993 and 2007-2013), showed us an increase of minimum temperature, decrease of precipitation and also our prediction of maximum temperature reflected the 1989 Cold Wave that hit the region.
+
+All the .csv files were obtained using the previous code. In particular, a grid of texas was made taking care also of the elevation.
